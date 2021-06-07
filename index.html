@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+</head>
+<body>
+	<div id="container">
+		<h2>Введите URL сервера:</h2>
+		<form id="form_1">
+			<input name="input" type="text" placeholder="URL сервера" />
+			<button id="connect" type="submit">Подключиться</button>
+		</form>
+	</div>
+	<div id="screen">
+	</div>
+	<script>
+		var xhr = new XMLHttpRequest();
+		var domen;
+		var screenSize;
+
+		xhr.onload = function() {
+			if (xhr.status != 200) {
+				alert(`Ошибка ${xhr.status}: ${xhr.statusText}`);
+			} else {
+				let scr = document.querySelector("div#screen");
+				scr.innerHTML = xhr.response;
+			}
+		};
+
+		xhr.onerror = function() {
+			alert("Запрос не удался");
+		};
+
+		function getSize(){
+			var xhr2 = new XMLHttpRequest();
+
+			xhr2.onload = function() {
+				if (xhr2.status != 200) {
+					alert(`Ошибка ${xhr2.status}: ${xhr2.statusText}`);
+				} else {
+					screenSize = JSON.parse(xhr2.response);
+				}
+			};
+
+			xhr2.onerror = function() {
+				alert("Запрос не удался");
+			};
+
+			xhr2.open('GET', domen + '/size');
+			xhr2.send();
+		}
+
+		function req() {
+			xhr.open('GET', domen + '/screen');
+			xhr.send();
+		};
+
+
+		function clickTo(x, y){
+			let xhr = new XMLHttpRequest();
+
+			xhr.onerror = function() {
+				alert("Запрос не удался");
+			};
+
+			xhr.open('GET', domen + '/click?x=' + String(x) + '&y='+ String(y));
+			xhr.send();
+		}
+
+		function req() {
+			xhr.open('GET', domen + '/screen');
+			xhr.send();
+		};
+
+		function connect(event){
+			event.preventDefault();
+			var ipt = document.getElementById("form_1");
+			domen = ipt.childNodes[1].value;
+			console.log(domen);
+			getSize();
+			setInterval(req, 2000);
+		}
+
+		function myclick(event){
+			let x = event.clientX - event.target.offsetLeft;
+			let y = event.clientY - event.target.offsetTop;
+			console.log("Кликнули по X: " + String(x) + " по Y: " + String(y));
+			let w = event.target.width;
+			let X = Math.round(x / w * screenSize.w);
+			let h = event.target.height;
+			let Y = Math.round(y / h * screenSize.h);
+			clickTo(X, Y);
+		}
+
+		var btn = document.getElementById("connect");
+		btn.onclick = connect;
+
+		var divs = document.getElementById("screen");
+		divs.addEventListener("click", myclick)
+	</script>
+</body>
+</html>
